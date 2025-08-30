@@ -4,6 +4,7 @@
 
 * Initialize the project with rust.
 
-## 2025-08-30 PPM Image
+## 2025-08-30 Image
 
 * Write a simple RGB image to PPM file.
+* Support JPG format.
