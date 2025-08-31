@@ -19,3 +19,7 @@
 * Implement struct: Camera.
 * Implement multi samples per pixel.
 * Include progress bar.
+
+## 2025-08-30 Multi-threading
+
+* Implement multi-threading with rayon.

@@ -970,6 +970,7 @@ dependencies = [
  "indicatif",
  "nalgebra",
  "rand",
+ "rayon",
 ]
 
 [[package]]

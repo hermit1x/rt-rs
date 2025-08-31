@@ -3,6 +3,7 @@ use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
 use rand::Rng;
 use indicatif::ProgressBar;
+use rayon::prelude::*;
 
 #[derive(Debug)]
 pub struct Camera {
@@ -85,7 +86,7 @@ impl Camera {
         Ray::new(self.center, ray_direction)
     }
 
-    pub fn render(&self, world: &impl Hittable) -> (usize, usize, Vec<u8>) {
+    pub fn render(&self, world: &(impl Hittable + Sync)) -> (usize, usize, Vec<u8>) {
         let size = self.width
             .checked_mul(self.height)
             .and_then(|px| px.checked_mul(3))
@@ -93,23 +94,25 @@ impl Camera {
         let mut buffer: Vec<u8> = vec![0u8; size];
 
         let bar = ProgressBar::new((self.width * self.height) as u64);
-        
-        for j in 0..self.height {
-            for i in 0..self.width {
+
+        // Parallelize by zipping pixel indices with mutable 3-byte chunks
+        let width = self.width;
+        buffer
+            .par_chunks_mut(3)
+            .enumerate()
+            .for_each(|(idx, pix)| {
+                let j = idx / width;
+                let i = idx % width;
+
                 let mut color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
                     color += Self::ray_color(&self.get_ray(i, j), world);
                 }
-                color /= self.sample_per_pixel as f64;
+                let color = color / self.sample_per_pixel as f64;
 
-                let p = (j * self.width + i) * 3;
-                self.write_color(
-                    &mut buffer[p..p+3], 
-                    color
-                );
+                self.write_color(pix, color);
                 bar.inc(1);
-            }
-        }
+            });
 
         bar.finish();
         (self.width, self.height, buffer)
