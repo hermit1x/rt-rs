@@ -22,9 +22,10 @@ fn main() {
     // Camera
     let camera = Camera::new(16.0 / 9.0, 1920);
     let (width, height, buffer) = camera.render(&world);
-    match write_jpg("output/rgb_test.jpg", width, height, &buffer, 100) {
-        Ok(()) => println!("Wrote rgb_test.jpg ({}x{} pixels)", width, height),
-        Err(e) => eprintln!("Failed to write rgb_test.jpg: {}", e),
+    let file_name = "output/gamma.jpg";
+    match write_jpg(file_name, width, height, &buffer, 100) {
+        Ok(()) => println!("Wrote {} ({}x{} pixels)", file_name, width, height),
+        Err(e) => eprintln!("Failed to write {}: {}", file_name, e),
     }
     return;
 }

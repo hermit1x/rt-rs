@@ -73,7 +73,11 @@ impl Camera {
             }
         }
     }
-    
+
+    fn linear_to_gamma(&self, color: Color) -> Color {
+        color.map(|c| if c > 0.0 { c.sqrt() } else { 0.0 })
+    }
+
     pub fn write_color(&self, pixel_buffer: &mut [u8], color: Color) -> () {
         pixel_buffer[0] = (color[0] * 255.999) as u8;
         pixel_buffer[1] = (color[1] * 255.999) as u8;
@@ -121,7 +125,7 @@ impl Camera {
                     );
                 }
                 let color = color / self.sample_per_pixel as f64;
-
+                let color = self.linear_to_gamma(color);
                 self.write_color(pix, color);
                 bar.inc(1);
             });

@@ -28,3 +28,5 @@
 
 * Implement ray bouncing.
 * Implement Lambertian Reflection.
+* Gamma Correction.
+
