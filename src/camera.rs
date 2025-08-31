@@ -1,3 +1,4 @@
+use std::ops::Mul;
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
@@ -63,8 +64,14 @@ impl Camera {
 
         match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             Some(hit_record) => {
-                let direction = &hit_record.normal + random_unit_vec3(rng);
-                0.5 * self.ray_color(&Ray::new(hit_record.point, direction), depth + 1, world, rng)
+                match hit_record.material.scatter(ray, &hit_record, rng) {
+                    Some((scattered, attenuation)) => {
+                        attenuation.component_mul(
+                            &self.ray_color(&scattered, depth + 1, world, rng)
+                        )
+                    },
+                    None => Color::new(0.0, 0.0, 0.0)
+                }
             },
             None => {
                 let unit_direction = &ray.direction; // 直接就是 normalized 的

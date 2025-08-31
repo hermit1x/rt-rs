@@ -43,3 +43,7 @@ pub fn random_on_hemisphere(normal: &Vec3, rng: &mut ThreadRng) -> Vec3 {
 pub fn near_zero(vec3: &Vec3) -> bool {
     vec3.norm() < 1e-8
 }
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - 2.0 * v.dot(n) * n
+}

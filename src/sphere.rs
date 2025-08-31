@@ -45,6 +45,11 @@ impl Hittable for Sphere {
         let normal = if front_face { outward_normal } else { -outward_normal };
         let normal = normal.normalize();
 
-        Some(HitRecord { point, normal, t: root })
+        Some(HitRecord {
+            point,
+            normal,
+            t: root,
+            material: Arc::clone(&self.material)
+        })
     }
 }

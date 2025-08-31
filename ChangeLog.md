@@ -30,3 +30,9 @@
 * Implement Lambertian Reflection.
 * Gamma Correction.
 
+## 2025-08-31 Material
+
+* Implement Material trait.
+* Implement Lambertian & Metal.
+
+
