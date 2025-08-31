@@ -1,7 +1,6 @@
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
-use rand::Rng;
 use indicatif::ProgressBar;
 use rand::rngs::ThreadRng;
 use rayon::prelude::*;
@@ -12,6 +11,7 @@ pub struct Camera {
     width: usize,
     height: usize,
     sample_per_pixel: usize,
+    max_depth: usize,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
@@ -24,6 +24,7 @@ impl Camera {
         let height = height.max(1);
 
         let sample_per_pixel = 16;
+        let max_depth = 5;
 
         let focal_length = 1.0f64;
         let viewport_height = 2.0f64;
@@ -47,6 +48,7 @@ impl Camera {
             width,
             height,
             sample_per_pixel,
+            max_depth,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -54,11 +56,17 @@ impl Camera {
         }
     }
 
-    pub fn ray_color(ray: &Ray, world: &impl Hittable) -> Color {
+    pub fn ray_color(&self, ray: &Ray, depth: usize, world: &impl Hittable, rnd: &mut ThreadRng) -> Color {
+        if depth >= self.max_depth {
+            return Color::new(0.0, 0.0, 0.0);
+        }
+
         match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             Some(hit_record) => {
                 let n = &hit_record.normal.normalize();
-                0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)
+                let direction = random_on_hemisphere(n, rnd);
+                // 0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)
+                0.5 * self.ray_color(&Ray::new(hit_record.point, direction), depth + 1, world, rnd)
             },
             None => {
                 let unit_direction = &ray.direction.normalize();
@@ -75,13 +83,13 @@ impl Camera {
     }
 
     fn get_ray(&self, i: usize, j: usize, rng: &mut ThreadRng) -> Ray {
-        let ru: f64 = rng.gen_range(-1.0..=1.0);
-        let rv: f64 = rng.gen_range(-1.0..=1.0);
+        let ru: f64 = random_range(-0.5, 0.5, rng);
+        let rv: f64 = random_range(-0.5, 0.5, rng);
         let pixel_sample = self.pixel00_loc
             + (i as f64) * self.pixel_delta_u
             + (j as f64) * self.pixel_delta_v
-            + 0.5 * ru * self.pixel_delta_u
-            + 0.5 * rv * self.pixel_delta_v;
+            + ru * self.pixel_delta_u
+            + rv * self.pixel_delta_v;
         let ray_direction = pixel_sample - self.center;
         Ray::new(self.center, ray_direction)
     }
@@ -107,7 +115,12 @@ impl Camera {
 
                 let mut color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
-                    color += Self::ray_color(&self.get_ray(i, j, &mut rng), world);
+                    color += self.ray_color(
+                        &self.get_ray(i, j, &mut rng),
+                        0,
+                        world,
+                        &mut rng
+                    );
                 }
                 let color = color / self.sample_per_pixel as f64;
 

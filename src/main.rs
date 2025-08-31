@@ -10,7 +10,6 @@ mod camera;
 use write_img::write_jpg;
 use common::*;
 use sphere::Sphere;
-use crate::hittable::{Hittable, Interval};
 use crate::hittable_list::HittableList;
 use camera::Camera;
 
@@ -21,7 +20,7 @@ fn main() {
     world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
-    let camera = Camera::new(16.0 / 9.0, 1080);
+    let camera = Camera::new(16.0 / 9.0, 1920);
     let (width, height, buffer) = camera.render(&world);
     match write_jpg("output/rgb_test.jpg", width, height, &buffer, 100) {
         Ok(()) => println!("Wrote rgb_test.jpg ({}x{} pixels)", width, height),
