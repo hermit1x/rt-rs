@@ -4,6 +4,7 @@ use ray::Ray;
 mod write_img;
 use write_img::write_jpg;
 
+type Point = nalgebra::Vector3<f64>;
 type Color = nalgebra::Vector3<f64>;
 
 fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
@@ -12,8 +13,20 @@ fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
     pixel_buffer[2] = (color[2] * 255.999) as u8;
 }
 
+fn hit_sphere(center: &Point, radius: f64, ray: &Ray) -> bool {
+    let oc = center - ray.origin;
+    let a = ray.direction.dot(&ray.direction);
+    let b = -2.0 * ray.direction.dot(&oc);
+    let c = oc.dot(&oc) - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+    discriminant >= 0.0
+}
 
 fn ray_color(ray: &Ray) -> Color {
+    if hit_sphere(&Point::new(0.0, 0.0, -1.0), 0.5, ray) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = ray.direction.normalize();
     let t = 0.5 * (unit_direction.y + 1.0);
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
