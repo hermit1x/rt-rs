@@ -13,3 +13,7 @@
 
 * Implement trait: Hittable.
 * Implement struct: Sphere.
+
+## 2025-08-30 Camera
+
+* Implement struct: Camera.
