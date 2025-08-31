@@ -17,3 +17,5 @@
 ## 2025-08-30 Camera
 
 * Implement struct: Camera.
+* Implement multi samples per pixel.
+* Include progress bar.

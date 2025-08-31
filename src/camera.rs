@@ -1,12 +1,15 @@
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
+use rand::Rng;
+use indicatif::ProgressBar;
 
 #[derive(Debug)]
 pub struct Camera {
     aspect_ratio: f64,
     width: usize,
     height: usize,
+    sample_per_pixel: usize,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
@@ -17,6 +20,8 @@ impl Camera {
     pub fn new(aspect_ratio: f64, width: usize) -> Self {
         let height = ((width as f64) / aspect_ratio) as usize;
         let height = height.max(1);
+
+        let sample_per_pixel = 16;
 
         let focal_length = 1.0f64;
         let viewport_height = 2.0f64;
@@ -39,6 +44,7 @@ impl Camera {
             aspect_ratio,
             width,
             height,
+            sample_per_pixel,
             center,
             pixel00_loc,
             pixel_delta_u,
@@ -66,27 +72,46 @@ impl Camera {
         pixel_buffer[2] = (color[2] * 255.999) as u8;
     }
 
+    fn get_ray(&self, i: usize, j: usize) -> Ray {
+        let mut rng = rand::thread_rng();
+        let ru: f64 = rng.gen_range(-1.0..=1.0);
+        let rv: f64 = rng.gen_range(-1.0..=1.0);
+        let pixel_sample = self.pixel00_loc
+            + (i as f64) * self.pixel_delta_u
+            + (j as f64) * self.pixel_delta_v
+            + 0.5 * ru * self.pixel_delta_u
+            + 0.5 * rv * self.pixel_delta_v;
+        let ray_direction = pixel_sample - self.center;
+        Ray::new(self.center, ray_direction)
+    }
+
     pub fn render(&self, world: &impl Hittable) -> (usize, usize, Vec<u8>) {
         let size = self.width
             .checked_mul(self.height)
             .and_then(|px| px.checked_mul(3))
             .expect("width*height*3 overflowed");
         let mut buffer: Vec<u8> = vec![0u8; size];
+
+        let bar = ProgressBar::new((self.width * self.height) as u64);
         
         for j in 0..self.height {
             for i in 0..self.width {
-                let pixel_center = self.pixel00_loc + (i as f64) * self.pixel_delta_u + (j as f64) * self.pixel_delta_v;
-                let ray_direction = pixel_center - self.center;
-                let ray = Ray::new(self.center, ray_direction);
+                let mut color = Color::new(0.0, 0.0, 0.0);
+                for _ in 0..self.sample_per_pixel {
+                    color += Self::ray_color(&self.get_ray(i, j), world);
+                }
+                color /= self.sample_per_pixel as f64;
 
                 let p = (j * self.width + i) * 3;
                 self.write_color(
                     &mut buffer[p..p+3], 
-                    Self::ray_color(&ray, world)
-                )
+                    color
+                );
+                bar.inc(1);
             }
         }
 
+        bar.finish();
         (self.width, self.height, buffer)
     }
 }
