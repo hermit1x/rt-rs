@@ -3,6 +3,7 @@ use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
 use rand::Rng;
 use indicatif::ProgressBar;
+use rand::rngs::ThreadRng;
 use rayon::prelude::*;
 
 #[derive(Debug)]
@@ -73,8 +74,7 @@ impl Camera {
         pixel_buffer[2] = (color[2] * 255.999) as u8;
     }
 
-    fn get_ray(&self, i: usize, j: usize) -> Ray {
-        let mut rng = rand::thread_rng();
+    fn get_ray(&self, i: usize, j: usize, rng: &mut ThreadRng) -> Ray {
         let ru: f64 = rng.gen_range(-1.0..=1.0);
         let rv: f64 = rng.gen_range(-1.0..=1.0);
         let pixel_sample = self.pixel00_loc
@@ -103,10 +103,11 @@ impl Camera {
             .for_each(|(idx, pix)| {
                 let j = idx / width;
                 let i = idx % width;
+                let mut rng = rand::thread_rng();
 
                 let mut color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
-                    color += Self::ray_color(&self.get_ray(i, j), world);
+                    color += Self::ray_color(&self.get_ray(i, j, &mut rng), world);
                 }
                 let color = color / self.sample_per_pixel as f64;
 
