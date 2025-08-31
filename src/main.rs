@@ -5,12 +5,13 @@ mod common;
 mod sphere;
 mod hittable;
 mod hittable_list;
+mod interval;
 
 use ray::Ray;
 use write_img::write_jpg;
 use common::*;
 use sphere::Sphere;
-use crate::hittable::Hittable;
+use crate::hittable::{Hittable, Interval};
 use crate::hittable_list::HittableList;
 
 fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
@@ -20,7 +21,7 @@ fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
 }
 
 fn ray_color(ray: &Ray, world: &impl Hittable) -> Color {
-    match world.hit(ray, 0.0, std::f64::INFINITY) {
+    match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
         Some(hit_record) => {
             let n = &hit_record.normal.normalize();
             0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)

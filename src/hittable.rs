@@ -1,5 +1,6 @@
 use crate::common::*;
 use crate::ray::Ray;
+pub use crate::interval::Interval;
 
 #[derive(Clone, Copy, Debug)]
 pub struct HitRecord {
@@ -9,5 +10,5 @@ pub struct HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
 }
