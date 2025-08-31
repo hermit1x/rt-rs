@@ -22,8 +22,8 @@ fn main() {
 
     let meterial_ground: Arc<dyn Material> = Arc::new(material::Lambertian::new(Color::new(0.5, 0.5, 0.8)));
     let material_center: Arc<dyn Material> = Arc::new(material::Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left: Arc<dyn Material> = Arc::new(material::Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right: Arc<dyn Material> = Arc::new(material::Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_left: Arc<dyn Material> = Arc::new(material::Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right: Arc<dyn Material> = Arc::new(material::Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Box::new(
         Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, Arc::clone(&meterial_ground))
@@ -42,7 +42,7 @@ fn main() {
     // Camera
     let camera = Camera::new(16.0 / 9.0, 1920);
     let (width, height, buffer) = camera.render(&world);
-    let file_name = "output/material_metal.jpg";
+    let file_name = "output/material_metal_fuzz.jpg";
     match write_jpg(file_name, width, height, &buffer, 100) {
         Ok(()) => println!("Wrote {} ({}x{} pixels)", file_name, width, height),
         Err(e) => eprintln!("Failed to write {}: {}", file_name, e),
