@@ -63,9 +63,7 @@ impl Camera {
 
         match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             Some(hit_record) => {
-                let n = &hit_record.normal; // 直接就是 normalized 的
-                let direction = random_on_hemisphere(n, rnd);
-                // 0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)
+                let direction = &hit_record.normal + random_unit_vec3(rnd);
                 0.5 * self.ray_color(&Ray::new(hit_record.point, direction), depth + 1, world, rnd)
             },
             None => {

@@ -23,3 +23,8 @@
 ## 2025-08-30 Multi-threading
 
 * Implement multi-threading with rayon.
+
+## 2025-08-31 Lambertian Reflection
+
+* Implement ray bouncing.
+* Implement Lambertian Reflection.
