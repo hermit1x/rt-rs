@@ -1,3 +1,5 @@
+mod ray;
+
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
@@ -69,6 +71,12 @@ fn write_jpg<P: AsRef<Path>>(
     Ok(())
 }
 
+fn write_color(pixel_buffer: &mut [u8], color: nalgebra::Vector3<f64>) -> () {
+    pixel_buffer[0] = (color[0] * 255.999) as u8;
+    pixel_buffer[1] = (color[1] * 255.999) as u8;
+    pixel_buffer[2] = (color[2] * 255.999) as u8;
+}
+
 fn main() {
     let width: usize = 1920;
     let height: usize = 1080;
@@ -84,12 +92,14 @@ fn main() {
     for j in 0..height {
         for i in 0..width {
             let p = (j * width + i) * 3;
-            let r = if width > 1 { (255.999 * (i as f64) / ((width - 1) as f64)).floor() as u8 } else { 0 };
-            let g = if height > 1 { (255.999 * (j as f64) / ((height - 1) as f64)).floor() as u8 } else { 0 };
-            let b = 0u8;
-            buffer[p] = r;
-            buffer[p + 1] = g;
-            buffer[p + 2] = b;
+            write_color(
+                &mut buffer[p..p+3],
+                nalgebra::Vector3::new(
+                    (i as f64) / ((width - 1) as f64),
+                    (j as f64) / ((height - 1) as f64),
+                    0.5
+                )
+            );
         }
     }
 
