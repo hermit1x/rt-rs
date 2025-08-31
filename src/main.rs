@@ -4,12 +4,14 @@ mod write_img;
 mod common;
 mod sphere;
 mod hittable;
+mod hittable_list;
 
 use ray::Ray;
 use write_img::write_jpg;
 use common::*;
 use sphere::Sphere;
 use crate::hittable::Hittable;
+use crate::hittable_list::HittableList;
 
 fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
     pixel_buffer[0] = (color[0] * 255.999) as u8;
@@ -17,9 +19,8 @@ fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
     pixel_buffer[2] = (color[2] * 255.999) as u8;
 }
 
-fn ray_color(ray: &Ray) -> Color {
-    let sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
-    match sphere.hit(ray, 0.0, std::f64::INFINITY) {
+fn ray_color(ray: &Ray, world: &impl Hittable) -> Color {
+    match world.hit(ray, 0.0, std::f64::INFINITY) {
         Some(hit_record) => {
             let n = &hit_record.normal.normalize();
             0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)
@@ -33,6 +34,11 @@ fn ray_color(ray: &Ray) -> Color {
 }
 
 fn main() {
+
+    // World
+    let mut world = HittableList::new();
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -79,7 +85,7 @@ fn main() {
             let p = (j * width + i) * 3;
             write_color(
                 &mut buffer[p..p+3],
-                ray_color(&ray)
+                ray_color(&ray, &world)
             );
         }
     }
