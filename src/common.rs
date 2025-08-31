@@ -24,7 +24,7 @@ pub fn random_range_vec3(min: f64, max: f64, rnd: &mut ThreadRng) -> Vec3 {
 pub fn random_unit_vec3(rnd: &mut ThreadRng) -> Vec3 {
     let mut v = random_range_vec3(-1.0, 1.0, rnd);
     while v.norm() > 1.0 {
-        v = random_vec3(rnd);
+        v = random_range_vec3(-1.0, 1.0, rnd);
     }
     v.normalize()
 }
