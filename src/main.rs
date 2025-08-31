@@ -1,11 +1,15 @@
 mod ray;
-use ray::Ray;
 
 mod write_img;
-use write_img::write_jpg;
+mod common;
+mod sphere;
+mod hittable;
 
-type Point = nalgebra::Vector3<f64>;
-type Color = nalgebra::Vector3<f64>;
+use ray::Ray;
+use write_img::write_jpg;
+use common::*;
+use sphere::Sphere;
+use crate::hittable::Hittable;
 
 fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
     pixel_buffer[0] = (color[0] * 255.999) as u8;
@@ -13,23 +17,19 @@ fn write_color(pixel_buffer: &mut [u8], color: Color) -> () {
     pixel_buffer[2] = (color[2] * 255.999) as u8;
 }
 
-fn hit_sphere(center: &Point, radius: f64, ray: &Ray) -> bool {
-    let oc = center - ray.origin;
-    let a = ray.direction.dot(&ray.direction);
-    let b = -2.0 * ray.direction.dot(&oc);
-    let c = oc.dot(&oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant >= 0.0
-}
-
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(&Point::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let sphere = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
+    match sphere.hit(ray, 0.0, std::f64::INFINITY) {
+        Some(hit_record) => {
+            let n = &hit_record.normal.normalize();
+            0.5 * Color::new(n[0] + 1.0, n[1] + 1.0, n[2] + 1.0)
+        },
+        None => {
+            let unit_direction = &ray.direction.normalize();
+            let t = 0.5 * (unit_direction.y + 1.0);
+            (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+        }
     }
-
-    let unit_direction = ray.direction.normalize();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
 fn main() {
@@ -85,7 +85,7 @@ fn main() {
     }
 
     match write_jpg("output/rgb_test.jpg", width, height, &buffer, 100) {
-        Ok(()) => println!("Wrote output.jpg ({}x{} pixels)", width, height),
-        Err(e) => eprintln!("Failed to write output.jpg: {}", e),
+        Ok(()) => println!("Wrote rgb_test.jpg ({}x{} pixels)", width, height),
+        Err(e) => eprintln!("Failed to write rgb_test.jpg: {}", e),
     }
 }

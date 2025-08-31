@@ -8,3 +8,8 @@
 
 * Write a simple RGB image to PPM file.
 * Support JPG format.
+
+## 2025-08-30 Hittable
+
+* Implement trait: Hittable.
+* Implement struct: Sphere.
