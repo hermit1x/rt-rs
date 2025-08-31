@@ -6,6 +6,7 @@ mod hittable;
 mod hittable_list;
 mod interval;
 mod camera;
+mod material;
 
 use write_img::write_jpg;
 use common::*;

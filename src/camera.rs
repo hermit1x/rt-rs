@@ -56,15 +56,15 @@ impl Camera {
         }
     }
 
-    pub fn ray_color(&self, ray: &Ray, depth: usize, world: &impl Hittable, rnd: &mut ThreadRng) -> Color {
+    pub fn ray_color(&self, ray: &Ray, depth: usize, world: &impl Hittable, rng: &mut ThreadRng) -> Color {
         if depth >= self.max_depth {
             return Color::new(0.0, 0.0, 0.0);
         }
 
         match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
             Some(hit_record) => {
-                let direction = &hit_record.normal + random_unit_vec3(rnd);
-                0.5 * self.ray_color(&Ray::new(hit_record.point, direction), depth + 1, world, rnd)
+                let direction = &hit_record.normal + random_unit_vec3(rng);
+                0.5 * self.ray_color(&Ray::new(hit_record.point, direction), depth + 1, world, rng)
             },
             None => {
                 let unit_direction = &ray.direction; // 直接就是 normalized 的
@@ -113,7 +113,7 @@ impl Camera {
             .for_each(|(idx, pix)| {
                 let j = idx / width;
                 let i = idx % width;
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 let mut color = Color::new(0.0, 0.0, 0.0);
                 for _ in 0..self.sample_per_pixel {
