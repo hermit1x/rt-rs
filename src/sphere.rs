@@ -40,6 +40,7 @@ impl Hittable for Sphere {
         // Determine front_face and adjust normal to always oppose the ray direction
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
         let normal = if front_face { outward_normal } else { -outward_normal };
+        let normal = normal.normalize();
 
         Some(HitRecord { point, normal, t: root })
     }
