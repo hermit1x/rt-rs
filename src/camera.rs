@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
@@ -26,19 +27,32 @@ impl Camera {
         let sample_per_pixel = 16;
         let max_depth = 64;
 
+        let vertical_fov = 30.0;
         let focal_length = 1.0f64;
-        let viewport_height = 2.0f64;
+        let theta = vertical_fov * PI / 180.0;
+        let half_height = (theta / 2.0).tan();
+
+        let viewport_height = 2.0 * half_height * focal_length;
         let viewport_width = viewport_height * (width as f64 / height as f64);
 
-        let center = Point3::new(0.0, 0.0, 0.0);
-        let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3::new(0.0, -viewport_height, 0.0);
+        let look_from = Point3::new(-2.0, 2.0, 1.0);
+        let look_at = Point3::new(0.0, 0.0, -1.0);
+        let up = Vec3::new(0.0, 1.0, 0.0);
+
+        let center = look_from;
+
+        let w = (look_from - look_at).normalize();
+        let u = up.cross(&w).normalize();
+        let v = w.cross(&u);
+
+        let viewport_u = viewport_width * u;
+        let viewport_v = viewport_height * - v;
 
         let pixel_delta_u = viewport_u / (width as f64);
         let pixel_delta_v = viewport_v / (height as f64);
 
         let viewport_upper_left = center
-            - Vec3::new(0.0, 0.0, focal_length)
+            - focal_length * w
             - viewport_u / 2.0
             - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
