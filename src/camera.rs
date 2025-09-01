@@ -27,24 +27,21 @@ impl Camera {
         let height = ((width as f64) / aspect_ratio) as usize;
         let height = height.max(1);
 
-        let sample_per_pixel = 16;
+        let sample_per_pixel = 1024;
         let max_depth = 64;
 
-        let defocus_angel = 0.0;
+        let defocus_angel = 0.6;
         let focus_distance = 10.0;
 
-        let defocus_angel = 10.0;
-        let focus_distance = 3.4;
-
-        let vertical_fov = 30.0;
+        let vertical_fov = 20.0;
         let theta = vertical_fov * PI / 180.0;
         let half_height = (theta / 2.0).tan();
 
         let viewport_height = 2.0 * half_height * focus_distance;
         let viewport_width = viewport_height * (width as f64 / height as f64);
 
-        let look_from = Point3::new(-2.0, 2.0, 1.0);
-        let look_at = Point3::new(0.0, 0.0, -1.0);
+        let look_from = Point3::new(13.0, 2.0, 3.0);
+        let look_at = Point3::new(0.0, 0.0, 0.0);
         let up = Vec3::new(0.0, 1.0, 0.0);
 
         let center = look_from;
