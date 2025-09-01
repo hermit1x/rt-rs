@@ -49,7 +49,8 @@ impl Hittable for Sphere {
             point,
             normal,
             t: root,
-            material: Arc::clone(&self.material)
+            material: Arc::clone(&self.material),
+            front_face,
         })
     }
 }

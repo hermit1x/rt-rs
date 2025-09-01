@@ -1,4 +1,3 @@
-use std::ops::Mul;
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
@@ -25,7 +24,7 @@ impl Camera {
         let height = height.max(1);
 
         let sample_per_pixel = 16;
-        let max_depth = 5;
+        let max_depth = 64;
 
         let focal_length = 1.0f64;
         let viewport_height = 2.0f64;
