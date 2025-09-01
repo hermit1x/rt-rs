@@ -1,4 +1,4 @@
-use crate::common::{Color, near_zero, random_unit_vec3, reflect, refract, random};
+use crate::common::{Color, near_zero, random, random_unit_vec3, reflect, refract};
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use rand::rngs::ThreadRng;
@@ -107,15 +107,16 @@ impl Material for Dielectric {
         };
 
         let unit_direction = ray_in.direction;
-        let cos_theta = f64::min(unit_direction.dot(&hit_record.normal), 1.0);
+        let cos_theta = f64::min(-unit_direction.dot(&hit_record.normal), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = reflection_index * sin_theta > 1.0;
-        let direction = if cannot_refract {
-            reflect(&unit_direction, &hit_record.normal)
-        } else {
-            refract(&unit_direction, &hit_record.normal, reflection_index)
-        };
+        let direction =
+            if cannot_refract || self.reflectance(cos_theta, reflection_index) > random(rng) {
+                reflect(&unit_direction, &hit_record.normal)
+            } else {
+                refract(&unit_direction, &hit_record.normal, reflection_index)
+            };
 
         let scattered = Ray::new(hit_record.point, direction);
         Some((scattered, attenuation))

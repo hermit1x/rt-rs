@@ -34,5 +34,4 @@
 
 * Implement Material trait.
 * Implement Lambertian & Metal.
-
-
+* Implement Dielectric.
