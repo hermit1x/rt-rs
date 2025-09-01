@@ -1,6 +1,7 @@
 use rand::Rng;
 use rand::rngs::ThreadRng;
 use rand_distr::{Normal, Distribution};
+pub use std::f64::consts::PI;
 
 pub type Point3 = nalgebra::Vector3<f64>;
 pub type Vec3 = nalgebra::Vector3<f64>;
@@ -28,6 +29,12 @@ pub fn random_unit_vec3(rng: &mut ThreadRng) -> Vec3 {
     let y = normal_dist.sample(rng);
     let z = normal_dist.sample(rng);
     Vec3::new(x, y, z).normalize()
+}
+
+pub fn random_in_unit_disk(rng: &mut ThreadRng) -> Vec3 {
+    let theta = 2.0 * PI * random(rng);
+    let r = random(rng).sqrt();
+    Vec3::new(r * theta.cos(), r * theta.sin(), 0.0)
 }
 
 pub fn random_on_hemisphere(normal: &Vec3, rng: &mut ThreadRng) -> Vec3 {

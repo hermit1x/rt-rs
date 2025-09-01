@@ -46,7 +46,7 @@ fn main() {
     // Camera
     let camera = Camera::new(16.0 / 9.0, 1920);
     let (width, height, buffer) = camera.render(&world);
-    let file_name = "output/camera_fov.jpg";
+    let file_name = "output/camera_defocus.jpg";
     match write_jpg(file_name, width, height, &buffer, 100) {
         Ok(()) => println!("Wrote {} ({}x{} pixels)", file_name, width, height),
         Err(e) => eprintln!("Failed to write {}: {}", file_name, e),

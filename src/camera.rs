@@ -17,6 +17,9 @@ pub struct Camera {
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    defocus_angel: f64,
+    defocus_u: Vec3,
+    defocus_v: Vec3,
 }
 
 impl Camera {
@@ -27,12 +30,17 @@ impl Camera {
         let sample_per_pixel = 16;
         let max_depth = 64;
 
+        let defocus_angel = 0.0;
+        let focus_distance = 10.0;
+
+        let defocus_angel = 10.0;
+        let focus_distance = 3.4;
+
         let vertical_fov = 30.0;
-        let focal_length = 1.0f64;
         let theta = vertical_fov * PI / 180.0;
         let half_height = (theta / 2.0).tan();
 
-        let viewport_height = 2.0 * half_height * focal_length;
+        let viewport_height = 2.0 * half_height * focus_distance;
         let viewport_width = viewport_height * (width as f64 / height as f64);
 
         let look_from = Point3::new(-2.0, 2.0, 1.0);
@@ -52,10 +60,14 @@ impl Camera {
         let pixel_delta_v = viewport_v / (height as f64);
 
         let viewport_upper_left = center
-            - focal_length * w
+            - focus_distance * w
             - viewport_u / 2.0
             - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        let defocus_radius = focus_distance * (defocus_angel / 2.0 / 180.0 * PI).tan();
+        let defocus_u = defocus_radius * u;
+        let defocus_v = defocus_radius * v;
 
         Self {
             aspect_ratio,
@@ -67,6 +79,9 @@ impl Camera {
             pixel00_loc,
             pixel_delta_u,
             pixel_delta_v,
+            defocus_angel,
+            defocus_u,
+            defocus_v,
         }
     }
 
@@ -112,8 +127,15 @@ impl Camera {
             + (j as f64) * self.pixel_delta_v
             + ru * self.pixel_delta_u
             + rv * self.pixel_delta_v;
-        let ray_direction = pixel_sample - self.center;
-        Ray::new(self.center, ray_direction)
+
+
+        let ray_origin = if self.defocus_angel <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample(rng)
+        };
+        let ray_direction = pixel_sample - ray_origin;
+        Ray::new(ray_origin, ray_direction)
     }
 
     pub fn render(&self, world: &(impl Hittable + Sync)) -> (usize, usize, Vec<u8>) {
@@ -152,5 +174,10 @@ impl Camera {
 
         bar.finish();
         (self.width, self.height, buffer)
+    }
+
+    fn defocus_disk_sample(&self, rng: &mut ThreadRng) -> Vec3 {
+        let p = random_in_unit_disk(rng);
+        self.center + self.defocus_u * p.x + self.defocus_v * p.y
     }
 }
