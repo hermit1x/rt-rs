@@ -1,4 +1,3 @@
-use std::f64::consts::PI;
 use crate::common::*;
 use crate::hittable::{Hittable, Interval};
 use crate::ray::Ray;
@@ -8,7 +7,6 @@ use rayon::prelude::*;
 
 #[derive(Debug)]
 pub struct Camera {
-    aspect_ratio: f64,
     width: usize,
     height: usize,
     sample_per_pixel: usize,
@@ -51,15 +49,12 @@ impl Camera {
         let v = w.cross(&u);
 
         let viewport_u = viewport_width * u;
-        let viewport_v = viewport_height * - v;
+        let viewport_v = viewport_height * -v;
 
         let pixel_delta_u = viewport_u / (width as f64);
         let pixel_delta_v = viewport_v / (height as f64);
 
-        let viewport_upper_left = center
-            - focus_distance * w
-            - viewport_u / 2.0
-            - viewport_v / 2.0;
+        let viewport_upper_left = center - focus_distance * w - viewport_u / 2.0 - viewport_v / 2.0;
         let pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
         let defocus_radius = focus_distance * (defocus_angel / 2.0 / 180.0 * PI).tan();
@@ -67,7 +62,6 @@ impl Camera {
         let defocus_v = defocus_radius * v;
 
         Self {
-            aspect_ratio,
             width,
             height,
             sample_per_pixel,
@@ -82,21 +76,23 @@ impl Camera {
         }
     }
 
-    pub fn ray_color(&self, ray: &Ray, depth: usize, world: &impl Hittable, rng: &mut ThreadRng) -> Color {
+    pub fn ray_color(
+        &self,
+        ray: &Ray,
+        depth: usize,
+        world: &impl Hittable,
+        rng: &mut ThreadRng,
+    ) -> Color {
         if depth >= self.max_depth {
             return Color::new(0.0, 0.0, 0.0);
         }
 
         match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
-            Some(hit_record) => {
-                match hit_record.material.scatter(ray, &hit_record, rng) {
-                    Some((scattered, attenuation)) => {
-                        attenuation.component_mul(
-                            &self.ray_color(&scattered, depth + 1, world, rng)
-                        )
-                    },
-                    None => Color::new(0.0, 0.0, 0.0)
+            Some(hit_record) => match hit_record.material.scatter(ray, &hit_record, rng) {
+                Some((scattered, attenuation)) => {
+                    attenuation.component_mul(&self.ray_color(&scattered, depth + 1, world, rng))
                 }
+                None => Color::new(0.0, 0.0, 0.0),
             },
             None => {
                 let unit_direction = &ray.direction; // 直接就是 normalized 的
@@ -125,7 +121,6 @@ impl Camera {
             + ru * self.pixel_delta_u
             + rv * self.pixel_delta_v;
 
-
         let ray_origin = if self.defocus_angel <= 0.0 {
             self.center
         } else {
@@ -136,7 +131,8 @@ impl Camera {
     }
 
     pub fn render(&self, world: &(impl Hittable + Sync)) -> (usize, usize, Vec<u8>) {
-        let size = self.width
+        let size = self
+            .width
             .checked_mul(self.height)
             .and_then(|px| px.checked_mul(3))
             .expect("width*height*3 overflowed");
@@ -146,28 +142,20 @@ impl Camera {
 
         // Parallelize by zipping pixel indices with mutable 3-byte chunks
         let width = self.width;
-        buffer
-            .par_chunks_mut(3)
-            .enumerate()
-            .for_each(|(idx, pix)| {
-                let j = idx / width;
-                let i = idx % width;
-                let mut rng = rand::rng();
+        buffer.par_chunks_mut(3).enumerate().for_each(|(idx, pix)| {
+            let j = idx / width;
+            let i = idx % width;
+            let mut rng = rand::rng();
 
-                let mut color = Color::new(0.0, 0.0, 0.0);
-                for _ in 0..self.sample_per_pixel {
-                    color += self.ray_color(
-                        &self.get_ray(i, j, &mut rng),
-                        0,
-                        world,
-                        &mut rng
-                    );
-                }
-                let color = color / self.sample_per_pixel as f64;
-                let color = self.linear_to_gamma(color);
-                self.write_color(pix, color);
-                bar.inc(1);
-            });
+            let mut color = Color::new(0.0, 0.0, 0.0);
+            for _ in 0..self.sample_per_pixel {
+                color += self.ray_color(&self.get_ray(i, j, &mut rng), 0, world, &mut rng);
+            }
+            let color = color / self.sample_per_pixel as f64;
+            let color = self.linear_to_gamma(color);
+            self.write_color(pix, color);
+            bar.inc(1);
+        });
 
         bar.finish();
         (self.width, self.height, buffer)

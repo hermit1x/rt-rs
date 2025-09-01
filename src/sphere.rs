@@ -1,18 +1,22 @@
-use std::sync::Arc;
 use crate::common::*;
-use crate::hittable::{Hittable, HitRecord, Interval};
-use crate::ray::Ray;
+use crate::hittable::{HitRecord, Hittable, Interval};
 use crate::material::Material;
+use crate::ray::Ray;
+use std::sync::Arc;
 
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub material: Arc<dyn Material>
+    pub material: Arc<dyn Material>,
 }
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
-        Self { center, radius, material }
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -42,7 +46,11 @@ impl Hittable for Sphere {
         let outward_normal = (point - self.center) / self.radius;
         // Determine front_face and adjust normal to always oppose the ray direction
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
-        let normal = if front_face { outward_normal } else { -outward_normal };
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
         let normal = normal.normalize();
 
         Some(HitRecord {

@@ -1,4 +1,4 @@
-use crate::common::{Color, near_zero, random, random_unit_vec3, reflect, refract};
+use crate::common::{near_zero, random, random_unit_vec3, reflect, refract, Color};
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use rand::rngs::ThreadRng;
@@ -25,7 +25,7 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(
         &self,
-        ray_in: &Ray,
+        _ray_in: &Ray,
         hit_record: &HitRecord,
         rng: &mut ThreadRng,
     ) -> Option<(Ray, Color)> {
