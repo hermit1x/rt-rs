@@ -27,8 +27,8 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        if !self.aabb.hit(ray, ray_t) {
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord> {
+        if !self.aabb.hit(ray, interval) {
             return None;
         }
 
@@ -45,9 +45,9 @@ impl Hittable for Sphere {
 
         // Find the nearest root that lies in the acceptable range.
         let mut root = (-half_b - sqrtd) / a;
-        if root < ray_t.start || root > ray_t.end {
+        if root < interval.start || root > interval.end {
             root = (-half_b + sqrtd) / a;
-            if root < ray_t.start || root > ray_t.end {
+            if root < interval.start || root > interval.end {
                 return None;
             }
         }

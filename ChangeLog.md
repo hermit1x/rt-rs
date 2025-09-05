@@ -38,4 +38,5 @@
 
 ## 2025-09-05 Bounding Volume
 
-* Implment AABB
+* Implement AABB
+* implement BVH
