@@ -35,3 +35,7 @@
 * Implement Material trait.
 * Implement Lambertian & Metal.
 * Implement Dielectric.
+
+## 2025-09-05 Bounding Volume
+
+* Implment AABB

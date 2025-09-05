@@ -7,6 +7,7 @@ mod material;
 mod ray;
 mod sphere;
 mod write_img;
+mod aabb;
 
 use crate::hittable_list::HittableList;
 use crate::material::Material;
@@ -15,6 +16,7 @@ use common::*;
 use sphere::Sphere;
 use std::sync::Arc;
 use write_img::write_jpg;
+use crate::hittable::Hittable;
 
 fn main() {
     // World
@@ -84,10 +86,19 @@ fn main() {
         Arc::clone(&material_3),
     )));
 
+    // Debug
+    let sp = Sphere::new(
+        Point3::new(4.0, 1.0, 0.0),
+        1.0,
+        Arc::clone(&material_3)
+    );
+
+    println!("{:?}", sp.get_aabb());
+
     // Camera
     let camera = Camera::new(16.0 / 9.0, 1920);
     let (width, height, buffer) = camera.render(&world);
-    let file_name = "output/final_render.jpg";
+    let file_name = "output/aabb_1.jpg";
     match write_jpg(file_name, width, height, &buffer, 100) {
         Ok(()) => println!("Wrote {} ({}x{} pixels)", file_name, width, height),
         Err(e) => eprintln!("Failed to write {}: {}", file_name, e),

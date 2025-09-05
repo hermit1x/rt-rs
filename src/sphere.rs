@@ -3,25 +3,35 @@ use crate::hittable::{HitRecord, Hittable, Interval};
 use crate::material::Material;
 use crate::ray::Ray;
 use std::sync::Arc;
+use crate::aabb::AABB;
 
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
     pub material: Arc<dyn Material>,
+    aabb: AABB,
 }
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Material>) -> Self {
+        let a: Point3 = center - Point3::new(radius, radius, radius);
+        let b: Point3 = center + Point3::new(radius, radius, radius);
+        let aabb = AABB::from_point(&a, &b);
         Self {
             center,
             radius,
             material,
+            aabb,
         }
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        if !self.aabb.hit(ray, ray_t) {
+            return None;
+        }
+
         // Solve |(ray.origin + t*ray.direction) - center|^2 = radius^2
         let oc = ray.origin - self.center;
         let a = ray.direction.dot(&ray.direction);
@@ -60,5 +70,9 @@ impl Hittable for Sphere {
             material: Arc::clone(&self.material),
             front_face,
         })
+    }
+
+    fn get_aabb(&self) -> &AABB {
+        &self.aabb
     }
 }

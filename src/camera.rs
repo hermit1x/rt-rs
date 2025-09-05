@@ -25,8 +25,8 @@ impl Camera {
         let height = ((width as f64) / aspect_ratio) as usize;
         let height = height.max(1);
 
-        let sample_per_pixel = 1024;
-        let max_depth = 64;
+        let sample_per_pixel = 16;
+        let max_depth = 4;
 
         let defocus_angel = 0.6;
         let focus_distance = 10.0;
@@ -87,7 +87,7 @@ impl Camera {
             return Color::new(0.0, 0.0, 0.0);
         }
 
-        match world.hit(ray, Interval::new(0.001, f64::INFINITY)) {
+        match world.hit(ray, &Interval::new(0.001, f64::INFINITY)) {
             Some(hit_record) => match hit_record.material.scatter(ray, &hit_record, rng) {
                 Some((scattered, attenuation)) => {
                     attenuation.component_mul(&self.ray_color(&scattered, depth + 1, world, rng))

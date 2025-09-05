@@ -3,6 +3,7 @@ pub use crate::interval::Interval;
 use crate::material::Material;
 use crate::ray::Ray;
 use std::sync::Arc;
+use crate::aabb::AABB;
 
 pub struct HitRecord {
     pub point: Point3,
@@ -13,5 +14,6 @@ pub struct HitRecord {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray: &Ray, interval: Interval) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, interval: &Interval) -> Option<HitRecord>;
+    fn get_aabb(&self) -> &AABB;
 }
